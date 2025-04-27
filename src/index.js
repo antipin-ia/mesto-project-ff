@@ -1,11 +1,7 @@
 import './pages/index.css';
 import { createCard, getCurrentCard } from './scripts/card.js';
 import { openModal, closeModal } from './scripts/modal.js';
-import {
-  enableValidation,
-  clearValidation,
-  validationConfig,
-} from './scripts/validation.js';
+import { enableValidation, clearValidation } from './scripts/validation.js';
 import {
   getUserInfo,
   getInitialCards,
@@ -16,6 +12,15 @@ import {
   validateImageUrl,
 } from './scripts/api.js';
 import { handleSubmit } from './scripts/utils.js';
+
+export const validationConfig = {
+  formSelector: '.popup__form',
+  inputSelector: '.popup__input',
+  submitButtonSelector: '.popup__button',
+  inactiveButtonClass: 'popup__button_disabled',
+  inputErrorClass: 'popup__input_type_error',
+  errorClass: 'popup__error_visible',
+};
 
 const profileForm = document.forms['edit-profile'];
 const profileFormNameInput = profileForm.querySelector('.popup__input_type_name');
@@ -83,17 +88,17 @@ addCardButton.addEventListener('click', () => {
 function handleChangeAvatarSubmit(evt) {
   function makeRequest() {
     const avatarLink = avatarPopupInput.value;
-    const isValid = validateImageUrl(avatarLink);
-    if (!isValid) {
-      console.error('URL недоступен или не удалось установить соединение');
-      return Promise.reject(new Error('Некорректный URL'));
-    }
-    return changeAvatar(avatarLink).then((response) => {
-      profileImage.src = response.avatar;
-      closeModal(avatarPopup);
-    });
+    return validateImageUrl(avatarLink)
+      .then(() => changeAvatar(avatarLink))
+      .then((response) => {
+        profileImage.src = response.avatar;
+        closeModal(avatarPopup);
+      })
+      .catch((err) => {
+        console.error('Ошибка:', err.message);
+        return Promise.reject(err);
+      });
   }
-
   handleSubmit(makeRequest, evt);
 }
 
@@ -124,11 +129,12 @@ function showImagePopup(event) {
 
 function handleProfileFormSubmit(evt) {
   function makeRequest() {
-    return editProfile(profileFormNameInput.value, profileFormJobInput.value).then((userData) => {
-      profileTitle.textContent = userData.name;
-      profileDescription.textContent = userData.about;
-      closeModal(profileEditPopup);
-    });
+    return editProfile(profileFormNameInput.value, profileFormJobInput.value)
+      .then((userData) => {
+        profileTitle.textContent = userData.name;
+        profileDescription.textContent = userData.about;
+        closeModal(profileEditPopup);
+      });
   }
   handleSubmit(makeRequest, evt);
 }
@@ -137,8 +143,8 @@ profileForm.addEventListener('submit', handleProfileFormSubmit);
 
 function handleAddCardSubmit(evt) {
   function makeRequest() {
-    return addCard(cardNameInput.value, cardLinkInput.value).then(
-      (cardData) => {
+    return addCard(cardNameInput.value, cardLinkInput.value)
+      .then((cardData) => {
         const cardElement = createCard({
           cardData,
           showImagePopup,
@@ -147,8 +153,7 @@ function handleAddCardSubmit(evt) {
         });
         cardsContainer.prepend(cardElement);
         closeModal(addCardPopup);
-      },
-    );
+      });
   }
   handleSubmit(makeRequest, evt);
 }
