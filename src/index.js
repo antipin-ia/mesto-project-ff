@@ -2,15 +2,6 @@ import './pages/index.css';
 import { createCard, getCurrentCard } from './scripts/card.js';
 import { openModal, closeModal } from './scripts/modal.js';
 import { enableValidation, clearValidation } from './scripts/validation.js';
-import {
-  getUserInfo,
-  getInitialCards,
-  editProfile,
-  addCard,
-  deleteCard,
-  changeAvatar,
-  validateImageUrl,
-} from './scripts/api.js';
 import { handleSubmit } from './scripts/utils.js';
 
 export const validationConfig = {
@@ -53,7 +44,38 @@ const avatarPopup = document.querySelector('.popup_type_avatar');
 
 const closeButtons = document.querySelectorAll('.popup__close');
 
-let profileId;
+// Моковые данные профиля
+const mockProfile = {
+  name: 'Жак-Ив Кусто',
+  about: 'Исследователь океана',
+  avatar: './images/avatar.jpg',
+  _id: 'mock-profile-id'
+};
+
+// Моковые карточки
+const mockCards = [
+  {
+    name: 'Архыз',
+    link: './images/card_1.jpg',
+    _id: 'mock-card-1',
+    owner: { _id: 'mock-profile-id' },
+    likes: []
+  },
+  {
+    name: 'Челябинская область',
+    link: './images/card_2.jpg',
+    _id: 'mock-card-2',
+    owner: { _id: 'mock-profile-id' },
+    likes: []
+  },
+  {
+    name: 'Иваново',
+    link: './images/card_3.jpg',
+    _id: 'mock-card-3',
+    owner: { _id: 'mock-profile-id' },
+    likes: []
+  }
+];
 
 function openDeleteConfirmationPopup() {
   openModal(deletePopup);
@@ -86,31 +108,16 @@ addCardButton.addEventListener('click', () => {
 });
 
 function handleChangeAvatarSubmit(evt) {
-  function makeRequest() {
-    const avatarLink = avatarPopupInput.value;
-    return validateImageUrl(avatarLink)
-      .then(() => changeAvatar(avatarLink))
-      .then((response) => {
-        profileImage.src = response.avatar;
-        closeModal(avatarPopup);
-      })
-      .catch((err) => {
-        console.error('Ошибка:', err.message);
-        return Promise.reject(err);
-      });
-  }
-  handleSubmit(makeRequest, evt);
+  evt.preventDefault();
+  profileImage.src = avatarPopupInput.value;
+  closeModal(avatarPopup);
 }
 
 avatarChangeForm.addEventListener('submit', handleChangeAvatarSubmit);
 
 function handleDeleteCard({ cardId, deleteButton }) {
-  deleteCard(cardId)
-    .then(() => {
-      deleteButton.closest('.places__item').remove();
-      closeDeletePopup();
-    })
-    .catch(console.error);
+  deleteButton.closest('.places__item').remove();
+  closeDeletePopup();
 }
 
 function handleDeleteCardSubmit(event) {
@@ -128,34 +135,30 @@ function showImagePopup(event) {
 }
 
 function handleProfileFormSubmit(evt) {
-  function makeRequest() {
-    return editProfile(profileFormNameInput.value, profileFormJobInput.value)
-      .then((userData) => {
-        profileTitle.textContent = userData.name;
-        profileDescription.textContent = userData.about;
-        closeModal(profileEditPopup);
-      });
-  }
-  handleSubmit(makeRequest, evt);
+  evt.preventDefault();
+  profileTitle.textContent = profileFormNameInput.value;
+  profileDescription.textContent = profileFormJobInput.value;
+  closeModal(profileEditPopup);
 }
 
 profileForm.addEventListener('submit', handleProfileFormSubmit);
 
 function handleAddCardSubmit(evt) {
-  function makeRequest() {
-    return addCard(cardNameInput.value, cardLinkInput.value)
-      .then((cardData) => {
-        const cardElement = createCard({
-          cardData,
-          showImagePopup,
-          profileId,
-          openDeleteConfirmationPopup,
-        });
-        cardsContainer.prepend(cardElement);
-        closeModal(addCardPopup);
-      });
-  }
-  handleSubmit(makeRequest, evt);
+  evt.preventDefault();
+  const cardElement = createCard({
+    cardData: {
+      name: cardNameInput.value,
+      link: cardLinkInput.value,
+      _id: `mock-card-${Date.now()}`,
+      owner: { _id: mockProfile._id },
+      likes: []
+    },
+    showImagePopup,
+    profileId: mockProfile._id,
+    openDeleteConfirmationPopup,
+  });
+  cardsContainer.prepend(cardElement);
+  closeModal(addCardPopup);
 }
 
 cardAddForm.addEventListener('submit', handleAddCardSubmit);
@@ -172,14 +175,10 @@ function createCards(initialCards, profileId) {
   });
 }
 
-Promise.all([getUserInfo(), getInitialCards()])
-  .then(([userData, initialCardsData]) => {
-    profileTitle.textContent = userData.name;
-    profileDescription.textContent = userData.about;
-    profileImage.src = userData.avatar;
-    profileId = userData._id;
-    createCards(initialCardsData, profileId);
-  })
-  .catch(console.error);
+// Инициализация приложения с моковыми данными
+profileTitle.textContent = mockProfile.name;
+profileDescription.textContent = mockProfile.about;
+profileImage.src = mockProfile.avatar;
+createCards(mockCards, mockProfile._id);
 
 enableValidation(validationConfig);

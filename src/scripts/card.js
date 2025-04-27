@@ -1,21 +1,13 @@
-import { changeLikeStatus } from './api';
-
 const cardTemplate = document.querySelector('#card-template').content;
 
 let currentCardId, currentDeleteButton;
 
-function likeCard(likeButton, likeCounter, cardId) {
+function likeCard(likeButton, likeCounter) {
   const isLiked = likeButton.classList.contains('card__like-button_is-active');
-  if (cardId) {
-    changeLikeStatus(cardId, isLiked)
-      .then((cardData) => {
-        if (cardData) {
-          likeButton.classList.toggle('card__like-button_is-active');
-          likeCounter.textContent = cardData.likes.length;
-        }
-      })
-      .catch(console.error);
-  }
+  likeButton.classList.toggle('card__like-button_is-active');
+  likeCounter.textContent = isLiked 
+    ? parseInt(likeCounter.textContent) - 1 
+    : parseInt(likeCounter.textContent) + 1;
 }
 
 export function createCard({
@@ -46,7 +38,7 @@ export function createCard({
   }
 
   likeButton.addEventListener('click', () => {
-    likeCardCallback(likeButton, likeCounter, cardId);
+    likeCardCallback(likeButton, likeCounter);
   });
 
   if (cardData.owner._id !== profileId) {
