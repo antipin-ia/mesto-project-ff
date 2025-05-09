@@ -74,6 +74,27 @@ const mockCards = [
     _id: 'mock-card-3',
     owner: { _id: 'mock-profile-id' },
     likes: []
+  },
+    {
+    name: 'Архыз',
+    link: './images/card_1.jpg',
+    _id: 'mock-card-1',
+    owner: { _id: 'mock-profile-id' },
+    likes: []
+  },
+  {
+    name: 'Челябинская область',
+    link: './images/card_2.jpg',
+    _id: 'mock-card-2',
+    owner: { _id: 'mock-profile-id' },
+    likes: []
+  },
+  {
+    name: 'Иваново',
+    link: './images/card_3.jpg',
+    _id: 'mock-card-3',
+    owner: { _id: 'mock-profile-id' },
+    likes: []
   }
 ];
 
